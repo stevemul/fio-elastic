@@ -1,0 +1,66 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fio-tester
+  labels:
+    purpose: fio-testing
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fio-testing
+    spec:
+      containers:
+      - name: fio-container
+        image: 'docker-registry.default.svc:5000/fio-elastic/fio-elastic'
+        volumeMounts:
+        - name: fio-tmp
+          mountPath: /tmp/fio-data
+        - name: fio-ephemeral
+          mountPath: /fio-ephemeral
+        - name: fio-data-tier-1-rwo
+          mountPath: /fio-data-tier-1-rwo
+        - name: fio-data-tier-2-rwo
+          mountPath: /fio-data-tier-2-rwo
+        - name: fio-data-pwx-repl-1-rwo
+          mountPath: /fio-data-pwx-repl-1-rwo
+        - name: fio-data-pwx-repl-3-rwo
+          mountPath: /fio-data-pwx-repl-3-rwo
+        env:
+          - name: REMOTEFILES
+            value: >-
+              https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/36fac2306eaacac5420ba80788f66fa7f9d8f200/read-16k-all.fio
+              https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/36fac2306eaacac5420ba80788f66fa7f9d8f200/read-4k-all.fio
+              https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/36fac2306eaacac5420ba80788f66fa7f9d8f200/randread-16k-all.fio
+              https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/36fac2306eaacac5420ba80788f66fa7f9d8f200/randread-4k-all.fio
+              https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/36fac2306eaacac5420ba80788f66fa7f9d8f200/randwrite-16k-all.fio
+              https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/36fac2306eaacac5420ba80788f66fa7f9d8f200/randwrite-4k-all.fio
+              https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/36fac2306eaacac5420ba80788f66fa7f9d8f200/seqwrite-16k-all.fio
+              https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/36fac2306eaacac5420ba80788f66fa7f9d8f200/seqwrite-4k-all.fio
+          - name: JOBFILES
+            value: read-16k-all.fio read-4k-all.fio randread-16k-all.fio randread-4k-all.fio randwrite-16k-all.fio randwrite-4k-all.fio seqwrite-16k-all.fio seqwrite-4k-all.fio
+          - name: ES_SERVER
+            value: <elastic_server_ip>
+      volumes:
+      - name: fio-tmp
+        emptyDir: {}
+      - name: fio-ephemeral
+        emptyDir: {}
+      - name: fio-data-tier-1-rwo
+        persistentVolumeClaim:
+          claimName: fio-data-tier-1-rwo
+      - name: fio-data-tier-2-rwo
+        persistentVolumeClaim:
+          claimName: fio-data-tier-2-rwo
+      - name: fio-data-pwx-repl-1-rwo
+        persistentVolumeClaim:
+          claimName: fio-data-pwx-repl-1-rwo
+      - name: fio-data-pwx-repl-3-rwo
+        persistentVolumeClaim:
+          claimName: fio-data-pwx-repl-3-rwo
