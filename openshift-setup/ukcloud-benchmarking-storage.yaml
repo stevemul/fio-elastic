@@ -3,30 +3,54 @@
 kind: StorageClass
 apiVersion: storage.k8s.io/v1beta1
 metadata:
-    name: pwx-repl-1
+    name: pwx-r1-high
 provisioner: kubernetes.io/portworx-volume
 parameters:
    repl: "1"
+   io_priority: high
 
 ---
 
 kind: StorageClass
 apiVersion: storage.k8s.io/v1beta1
 metadata:
-    name: pwx-repl-3
+    name: pwx-r3-high
 provisioner: kubernetes.io/portworx-volume
 parameters:
    repl: "3"
+   io_priority: high
 
 ---
-##### Portworx persistent volume claims
+
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+    name: pwx-r1-med
+provisioner: kubernetes.io/portworx-volume
+parameters:
+   repl: "1"
+   io_priority: medium
+
+---
+
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+    name: pwx-r3-med
+provisioner: kubernetes.io/portworx-volume
+parameters:
+   repl: "3"
+   io_priority: medium
+
+---
+##### Persistent volume claims
 
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
    name: fio-data-tier-1-rwo
    annotations:
-     volume.beta.kubernetes.io/storage-class: tier-1
+     volume.beta.kubernetes.io/storage-class: tier1
 spec:
    accessModes:
      - ReadWriteOnce
@@ -54,9 +78,9 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-   name: fio-data-pwx-repl-1-rwo
+   name: fio-data-pwx-r1-high-rwo
    annotations:
-     volume.beta.kubernetes.io/storage-class: pwx-repl-1
+     volume.beta.kubernetes.io/storage-class: pwx-r1-high
 spec:
    accessModes:
      - ReadWriteOnce
@@ -69,9 +93,9 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-   name: fio-data-pwx-repl-3-rwo
+   name: fio-data-pwx-r3-high-rwo
    annotations:
-     volume.beta.kubernetes.io/storage-class: pwx-repl-3
+     volume.beta.kubernetes.io/storage-class: pwx-r3-high
 spec:
    accessModes:
      - ReadWriteOnce
@@ -84,9 +108,39 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-   name: fio-data-pwx-repl-1-rwx
+   name: fio-data-pwx-r1-med-rwo
    annotations:
-     volume.beta.kubernetes.io/storage-class: pwx-repl-1
+     volume.beta.kubernetes.io/storage-class: pwx-r1-med
+spec:
+   accessModes:
+     - ReadWriteOnce
+   resources:
+     requests:
+       storage: 40Gi
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+   name: fio-data-pwx-r3-med-rwo
+   annotations:
+     volume.beta.kubernetes.io/storage-class: pwx-r3-med
+spec:
+   accessModes:
+     - ReadWriteOnce
+   resources:
+     requests:
+       storage: 40Gi
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+   name: fio-data-pwx-r1-high-rwx
+   annotations:
+     volume.beta.kubernetes.io/storage-class: pwx-r1-high
 spec:
    accessModes:
      - ReadWriteMany
@@ -99,9 +153,9 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-   name: fio-data-pwx-repl-3-rwx
+   name: fio-data-pwx-r3-high-rwx
    annotations:
-     volume.beta.kubernetes.io/storage-class: pwx-repl-3
+     volume.beta.kubernetes.io/storage-class: pwx-r3-high
 spec:
    accessModes:
      - ReadWriteMany

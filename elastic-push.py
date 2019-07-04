@@ -30,7 +30,7 @@ for i in range(count):
   push_data['time'] = time
   push_data['disk_util'] = json_data['disk_util'][i]
   #print push_data
-  res = es.index(index="fio-output", doc_type='fio-2', body=push_data)
+  res = es.index(index="fio-output", doc_type='fio-3', body=push_data)
 
 
 #debug

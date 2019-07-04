@@ -1,0 +1,93 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  creationTimestamp: null
+  name: fio-elastic-cron
+  selfLink: /apis/batch/v1beta1/namespaces/fio-elastic/cronjobs/fio-elastic-cron
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+          - env:
+            - name: REMOTEFILES
+              value: https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/read-16k-all.fio
+                https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/read-4k-all.fio
+                https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/randread-16k-all.fio
+                https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/randread-4k-all.fio
+                https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/randwrite-16k-all.fio
+                https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/randwrite-4k-all.fio
+                https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/randwrite-4k-io128-all.fio
+                https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/seqwrite-16k-all.fio
+                https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/seqwrite-4k-all.fio
+                https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/seqwrite-4k-io128-all.fio
+                https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/randwrite-4k-io64-all.fio
+                https://gist.githubusercontent.com/stevemul/2a4f07f7a286602a0c1a1beb7eca8d9d/raw/eef469f7cdca7bfd2e52b91f5efcce8ceff064e9/seqwrite-4k-io64-all.fio
+            - name: JOBFILES
+              value: read-16k-all.fio read-4k-all.fio randread-16k-all.fio randread-4k-all.fio
+                randwrite-16k-all.fio randwrite-4k-all.fio seqwrite-16k-all.fio seqwrite-4k-all.fio
+                randwrite-4k-io64-all.fio seqwrite-4k-io64-all.fio
+            - name: ES_SERVER
+              value: <elasticsearchIp>
+            image: docker-registry.default.svc:5000/fio-elastic/fio-elastic
+            imagePullPolicy: Always
+            name: fio-container
+            resources: {}
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+            volumeMounts:
+            - mountPath: /tmp/fio-data
+              name: fio-tmp
+            - mountPath: /fio-ephemeral
+              name: fio-ephemeral
+            - mountPath: /fio-data-tier-1-rwo
+              name: fio-data-tier-1-rwo
+            - mountPath: /fio-data-tier-2-rwo
+              name: fio-data-tier-2-rwo
+            - mountPath: /fio-data-pwx-r1-high-rwo
+              name: fio-data-pwx-r1-high-rwo
+            - mountPath: /fio-data-pwx-r3-high-rwo
+              name: fio-data-pwx-r3-high-rwo
+            - mountPath: /fio-data-pwx-r1-med-rwo
+              name: fio-data-pwx-r1-med-rwo
+            - mountPath: /fio-data-pwx-r3-med-rwo
+              name: fio-data-pwx-r3-med-rwo
+          dnsPolicy: ClusterFirst
+          restartPolicy: Never
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+          volumes:
+          - emptyDir: {}
+            name: fio-tmp
+          - emptyDir: {}
+            name: fio-ephemeral
+          - name: fio-data-tier-1-rwo
+            persistentVolumeClaim:
+              claimName: fio-data-tier-1-rwo
+          - name: fio-data-tier-2-rwo
+            persistentVolumeClaim:
+              claimName: fio-data-tier-2-rwo
+          - name: fio-data-pwx-r1-high-rwo
+            persistentVolumeClaim:
+              claimName: fio-data-pwx-r1-high-rwo
+          - name: fio-data-pwx-r3-high-rwo
+            persistentVolumeClaim:
+              claimName: fio-data-pwx-r3-high-rwo
+          - name: fio-data-pwx-r1-med-rwo
+            persistentVolumeClaim:
+              claimName: fio-data-pwx-r1-med-rwo
+          - name: fio-data-pwx-r3-med-rwo
+            persistentVolumeClaim:
+              claimName: fio-data-pwx-r3-med-rwo
+  schedule: '@hourly'
+  successfulJobsHistoryLimit: 3
+  suspend: false
+status: {}
