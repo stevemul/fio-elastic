@@ -5,6 +5,7 @@ import json
 parser = ArgumentParser()
 parser.add_argument("-f", "--file", dest="filename", help="write report to FILE", metavar="FILE")
 parser.add_argument("-s", "--server", dest="server", help="server name or IP of elastic search")
+
 args = parser.parse_args()
 
 f = open(args.filename,"r")
@@ -20,7 +21,14 @@ time = json_data['time']
 fio_version = json_data['fio version']
 
 # setup the elasticsearch connection
-es = Elasticsearch([{'host':args.server,'port':'9200'}])
+es = Elasticsearch(
+  [args.server],
+  use_ssl=True,
+  verify_certs=True,
+  ca_certs='/elasticsearch/ca',
+  client_cert='/elasticsearch/cert',
+  client_key='/elasticsearch/key'
+  )
 
 # add the job and disk_util details to each job before we send it
 for i in range(count):

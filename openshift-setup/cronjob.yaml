@@ -35,8 +35,8 @@ spec:
                 randwrite-16k-all.fio randwrite-4k-all.fio seqwrite-16k-all.fio seqwrite-4k-all.fio
                 randwrite-4k-io64-all.fio seqwrite-4k-io64-all.fio
             - name: ES_SERVER
-              value: <elasticsearchIp>
-            image: docker-registry.default.svc:5000/fio-elastic/fio-elastic
+              value: logging-es.openshift-logging.svc.cluster.local
+            image: docker-registry.default.svc:5000/portworxbenchmarking/fio-elastic
             imagePullPolicy: Always
             name: fio-container
             resources: {}
@@ -59,6 +59,9 @@ spec:
               name: fio-data-pwx-r1-med-rwo
             - mountPath: /fio-data-pwx-r3-med-rwo
               name: fio-data-pwx-r3-med-rwo
+            - mountPath: /elasticsearch
+              name: elasticsearch
+              readOnly: true
           dnsPolicy: ClusterFirst
           restartPolicy: Never
           schedulerName: default-scheduler
@@ -87,7 +90,11 @@ spec:
           - name: fio-data-pwx-r3-med-rwo
             persistentVolumeClaim:
               claimName: fio-data-pwx-r3-med-rwo
-  schedule: '@hourly'
+          - name: elasticsearch
+            secret:
+              defaultMode: 420
+              secretName: elasticsearch
+  schedule: "@hourly"
   successfulJobsHistoryLimit: 3
   suspend: false
 status: {}
